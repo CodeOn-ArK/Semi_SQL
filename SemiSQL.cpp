@@ -1,12 +1,8 @@
-#include<conio.h>
-#include<math.h>
-#include<iostream.h>
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<fstream.h>
-#include<DOS.h>
-#include<iomanip.h>
+#include <iostream>
+#include <iomanip>
+
+const std::string PROMPT = "semi_sql> ";
+
 /*
 create database     done
 create table        done
@@ -17,64 +13,41 @@ delete table
 delete column
 add,average,percentage
 */
-void syntax(char a[]);
-void database(char cj[]);
-void createtable(char i[]);
-void shreadtable(char gh[], char tt[]);
-int linecr(char x[],char j[]);
-void main()
-{
-	clrscr();
-	_setcursortype(_NOCURSOR);
-	int i=0;
-	while(1)
-	{
-		gotoxy(15,6);
-		cout << "\t! READ THIS !";
-		gotoxy(15,7);
-		if(i==0)
-			i++;
-		cprintf("********************************************************");
-		textcolor(i);
-		gotoxy(15,8);
-		cprintf("Type CREATEDB to create a database.");
-			textcolor(i+1);
-		gotoxy(15,9);
-		cprintf("Type OPENDB to open the database.");
-			textcolor(i+2);
-		gotoxy(15,10);
-		cprintf("Type CREATETABLE to create the table.");
-			textcolor(i+3);
-		gotoxy(15,11);
-		cprintf("Type OPENTABLE to open the table.");
-			textcolor(i+4);
-		gotoxy(15,12);
-		cprintf("Type DPTABLE to display the table.");
-			textcolor(i+5);
-		gotoxy(15,13);
-		cprintf("Type SHOWTABLES to display the names of all the tables");
-			textcolor(i+6);
-		gotoxy(15,14);
-		cprintf("Type SELECTTABLE to select a specific table.");
-			textcolor(i+7);
-		gotoxy(15,15);
-		cprintf("Type SELECTCOLUMN to select a column name.");
-			textcolor(i+8);
-		gotoxy(15,16);
-		cprintf("Type EXIT to exit.");
-		textcolor(i);
-		gotoxy(15,17);
-		i++;
-		cprintf("********************************************************");
-		delay(2000);
-		if(i  > 5 ) break;
-		}
-		cout << "\nNow start entering data\n";
-	char a[10];
-	gets(a);
-	syntax(a);
-	getch();
 
+int parse(std::string);
+void database(char*);
+void createtable(char*);
+void shreadtable(char*, char*);
+int linecr(char*, char*);
+
+int main(void) {
+    std::string a;
+
+    std::cout << "Instructions" << std::endl
+        << "============" << std::endl
+        << "* Type CREATEDB to create a database." << std::endl
+        << "* Type OPENDB to open the database." << std::endl
+        << "* Type CREATETABLE to create the table." << std::endl
+        << "* Type OPENTABLE to open the table." << std::endl
+        << "* Type DPTABLE to display the table." << std::endl
+        << "* Type SHOWTABLES to display the names of all the tables" << std::endl
+        << "* Type SELECTTABLE to select a specific table." << std::endl
+        << "* Type SELECTCOLUMN to select a column name." << std::endl
+        << "* Type EXIT to exit." << std::endl;
+
+    do {
+        std::cout << std::endl << PROMPT;
+        getline(std::cin, a);
+    } while (parse(a));
+
+    return 0;
+}
+
+int parse(std::string a) {
+    // This will replace syntax()
+    if (a == "EXIT")
+        return 0;
+    return 1;
 }
 void database(char db[])
 {
@@ -88,7 +61,7 @@ void database(char db[])
 	int i=strlen(db);
 	z[i+1]='@';
 	z[i+2]='\0';
-	strcpy(db,z);	     // to be changed
+	strcpy(db,z);	     // to be changed // TODO: figure out what to change
 }
 void shreadtable(char db[],char table[])
 {
@@ -98,7 +71,7 @@ void shreadtable(char db[],char table[])
 	till it detects another @....
 	*/
 	char myline[100],line[100],ch;
-	cout <<"\n Enter column name\n";
+	std::cout <<"\n Enter column name\n";
 	gets(myline);
 	ifstream file(db);
 	while(1)
@@ -137,10 +110,10 @@ void shreadtable(char db[],char table[])
 			if(line[i] == ',')
 			{k++;i++;}
 			if(k>j || line[i] == ';') break;
-			if(k == j)cout << line[i];
+			if(k == j)std::cout << line[i];
 			i++;
 		}i=0;
-		cout << "\n" ;
+		std::cout << "\n" ;
 		delay(2000);
 	}
 	file.close();
@@ -151,23 +124,23 @@ void createtable(char db[])
 {
 	char a[10];
 	int i=0,n=0,k=0;
-	cout << "\nEnter table name\n";
+	std::cout << "\nEnter table name\n";
 	gets(a);
 	ofstream fout;
 	fout.open(db,ios::app|ios::nocreate);
 	if(!fout)
-		{cout<<"\nNO dB OPENED!!\n";};   //syntax
+		{std::cout<<"\nNO dB OPENED!!\n";};   //syntax
 	fout << "@"<< a << "@\n";
-	cout<<"\nEnter column names\n";  		//excess data warning;
+	std::cout<<"\nEnter column names\n";  		//excess data warning;
 	gets(a);
 	while(a[i] != '\0')
 	{
 		if(a[i] == ',') n++;
 		i++;
 	}
-	cout << endl;
+	std::cout << std::endl;
 	fout << a<< "\n";
-	cout <<"\nEnter column data\n";
+	std::cout <<"\nEnter column data\n";
 	i=0;
 	do
 	{
@@ -177,7 +150,7 @@ void createtable(char db[])
 		while(a[i] != '\0')
 		{
 		if(a[i] == ',') k++;
-		if(k > n){ cout <<"\nYou're entering excess data!"
+		if(k > n){ std::cout <<"\nYou're entering excess data!"
 					<< "\n Recheck your data\n"; goto maaza;}
 		i++;
 		}i=0;
@@ -224,33 +197,34 @@ int linecr(char line[],char line2[])
 }
 void syntax(char a[])
 {
+    // THIS IS HELL!
 	char syn[10],var[10],ch,line[50], line2[50];
 	static char db[20],table[30];
 	int i=0,k=0;
 	fstream infile,tout;
 	if(strcmp("CREATEDB",a) == 0) // done
 	{
-		cout << "\nCREATING" ;
-		cout << "\nEnter database name-\n";
+		std::cout << "\nCREATING" ;
+		std::cout << "\nEnter database name-\n";
 		gets(db);
 		database(db);
 		puts(db);
 		infile.open(db,ios::out|ios::noreplace);
-		cout << "\nDatabase created!\n";
+		std::cout << "\nDatabase created!\n";
 		gets(syn);
 		syntax(syn);
 	}
 	else if(strcmp("OPENDB",a) ==0) //done
 	{
-		cout << "\nEnter database name-\n ";
+		std::cout << "\nEnter database name-\n ";
 		gets(db);
 		database(db);
 		tout.open(db,ios::in);
 		if(!tout)
 		{
-			cout << "\nDB not created!\n ";
+			std::cout << "\nDB not created!\n ";
 		}
-		else 	cout << "\nDatabase opened!\n";
+		else 	std::cout << "\nDatabase opened!\n";
 		tout.close();
 		gets(syn);
 		syntax(syn);
@@ -262,7 +236,7 @@ void syntax(char a[])
 	if(strcmp("DPTABLE",a) == 0)
 	{
 		ifstream file(db);
-		if(!file) cout << "\nDB not entered!\n";
+		if(!file) std::cout << "\nDB not entered!\n";
 		while(1)
 		{
 	while(k != 1)
@@ -278,13 +252,13 @@ void syntax(char a[])
 		i=0;
 		while(line[i] != ';' )
 	{
-	if(line[i] == ',') {cout << "\t\t"; i++;}
+	if(line[i] == ',') {std::cout << "\t\t"; i++;}
 	if(line[i] == '}') goto jojol;
-	cout << line[i];
+	std::cout << line[i];
 	i++;
 	delay(100);
 	}
-	if(line[i] == ';')cout << ch;
+	if(line[i] == ';')std::cout << ch;
 	delay(1000);
 	}
 	if(file.eof() ==1) break;
@@ -303,7 +277,7 @@ void syntax(char a[])
 		tout.get(ch);
 		if(var[0] == '@')
 		{	linecr(var);
-			cout << var << ",";
+			std::cout << var << ",";
 		}
 		if(tout.eof()) break;
 	}
@@ -313,7 +287,7 @@ void syntax(char a[])
 	}
 	if(strcmp("SELECTTABLE",a) == 0)
 	{
-		cout << "\nEnter table name-\n";
+		std::cout << "\nEnter table name-\n";
 		gets(table);
 		gets(syn);
 		syntax(syn);
@@ -323,7 +297,7 @@ void syntax(char a[])
 		shreadtable(db,table);	//enter any column name and it will display the column name
 	}
 	if(strcmp("EXIT",a) == 0) exit(1);
-	else cout << "\t\t --WRONG SYNTAX!\n";
+	else std::cout << "\t\t --WRONG SYNTAX!\n";
 	gets(syn);
 	syntax(syn);
 }
