@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 
 const std::string PROMPT = "semi_sql> ";
 
@@ -23,8 +24,8 @@ int linecr(char*, char*);
 int main(void) {
     std::string a;
 
-    std::cout << "Instructions" << std::endl
-        << "============" << std::endl
+    std::cout << "\t! READ THIS !" << std::endl
+        << "********************************************************" << std::endl
         << "* Type CREATEDB to create a database." << std::endl
         << "* Type OPENDB to open the database." << std::endl
         << "* Type CREATETABLE to create the table." << std::endl
@@ -33,7 +34,8 @@ int main(void) {
         << "* Type SHOWTABLES to display the names of all the tables" << std::endl
         << "* Type SELECTTABLE to select a specific table." << std::endl
         << "* Type SELECTCOLUMN to select a column name." << std::endl
-        << "* Type EXIT to exit." << std::endl;
+        << "* Type EXIT to exit." << std::endl
+        << "********************************************************" << std::endl;
 
     do {
         std::cout << std::endl << PROMPT;
@@ -44,16 +46,41 @@ int main(void) {
 }
 
 int parse(std::string a) {
-    // This will replace syntax()
-    if (a == "EXIT")
+    if (a == "CREATEDB") {
+        // input dbname;
+        // call to createdb(dbname);
+    } else if (a == "OPENDB") {
+        // input dbname;
+        // call to opendb(dbname);
+    } else if (a == "CREATETABLE") {
+        // call to create_table(table_name);
+    } else if (a == "OPENTABLE") {
+        // TODO: Figure out the purpose of this command
+    } else if (a == "DPTABLE") {
+        // TODO: Figure out what to do here
+    } else if (a == "SHOWTABLES") {
+        // call to showtables();
+    } else if (a == "SELECTTABLE") {
+        // input table_name;
+        // call to select_table(table_name);
+    } else if (a == "SELECTCOLUMN") {
+        // input column_name;
+        // disp_column(column_name);
+    } else if (a == "EXIT")
         return 0;
+    else
+        std::cout << "Invalid Command!" << std::endl;
+
     return 1;
 }
-void database(char db[])
+void database(std::string db)
 {
+    // Basically what's happening here:
+    // db = '@' + db + '@'
+
 	char z[20];
 	int j=strlen(db);
-	for (int k=0,a=k+1;k<j,a<=j+1;k++,a++)
+	for (int k=0,a=k+1;k<j,a<=j+1;k++,a++)  // WTF! How's that condition working!?
 	{
 		z[a]=db[k];
 	}
