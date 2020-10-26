@@ -16,6 +16,7 @@ add,average,percentage
 */
 
 int parse(std::string);
+void createdb(std::string);
 void database(char*);
 void createtable(char*);
 void shreadtable(char*, char*);
@@ -47,8 +48,11 @@ int main(void) {
 
 int parse(std::string a) {
     if (a == "CREATEDB") {
-        // input dbname;
-        // call to createdb(dbname);
+        std::string dbname;
+        std::cout << "Enter database name- ";
+        getline(std::cin, dbname);
+        createdb(dbname);
+
     } else if (a == "OPENDB") {
         // input dbname;
         // call to opendb(dbname);
@@ -73,6 +77,20 @@ int parse(std::string a) {
 
     return 1;
 }
+
+void createdb(std::string dbname) {
+    std::fstream dbfile(dbname, std::ios::in);
+    if (dbfile)
+        std::cout << "Database exists!" << std::endl;
+    else {
+        dbfile.close();
+        dbfile.open(dbname, std::ios::out);
+
+    }
+    dbfile.close();
+    std::cout << "Database created!" << std::endl;
+}
+
 void database(std::string db)
 {
     // Basically what's happening here:
