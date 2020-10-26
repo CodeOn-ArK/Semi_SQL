@@ -2,28 +2,43 @@
 #include <iomanip>
 #include <fstream>
 
-const std::string PROMPT = "semi_sql> ";
+const std::string DEFAULT_PROMPT_TEXT = "semi_sql";
+const std::string PROMPT_SEP = "> ";
 
 /*
-create database     done
-create table        done
-show tables         done
-select *table       done
+create database               done & refactored
+open   database               done & refactored
+create table                  done
+show   tables                 done
+select *table                 done
 select <specific_column>table done
-delete table
-delete column
-add,average,percentage
+drop   table
+drop   column
+funcs: add()
+       average()
+   (?) percentage()
 */
 
 int parse(std::string);
 void createdb(std::string);
+void opendb(std::string);
+std::string get_prompt();
 void database(char*);
 void createtable(char*);
 void shreadtable(char*, char*);
 int linecr(char*, char*);
 
+struct db {
+    std::string name;
+    // add tables handler
+};
+
+struct db* currentdb;
+
 int main(void) {
     std::string a;
+
+    currentdb = nullptr;
 
     std::cout << "\t! READ THIS !" << std::endl
         << "********************************************************" << std::endl
@@ -39,7 +54,7 @@ int main(void) {
         << "********************************************************" << std::endl;
 
     do {
-        std::cout << std::endl << PROMPT;
+        std::cout << std::endl << get_prompt();
         getline(std::cin, a);
     } while (parse(a));
 
@@ -54,8 +69,11 @@ int parse(std::string a) {
         createdb(dbname);
 
     } else if (a == "OPENDB") {
-        // input dbname;
-        // call to opendb(dbname);
+        std::string dbname;
+        std::cout << "Enter database name- ";
+        getline(std::cin, dbname);
+        opendb(dbname);
+
     } else if (a == "CREATETABLE") {
         // call to create_table(table_name);
     } else if (a == "OPENTABLE") {
@@ -80,17 +98,37 @@ int parse(std::string a) {
 
 void createdb(std::string dbname) {
     std::fstream dbfile(dbname, std::ios::in);
-    if (dbfile)
-        std::cout << "Database exists!" << std::endl;
-    else {
-        dbfile.close();
-        dbfile.open(dbname, std::ios::out);
 
+    if (dbfile) {
+        std::cout << "Database exists!" << std::endl;
+        dbfile.close();
+        return;
     }
+
+    dbfile.open(dbname, std::ios::out);
     dbfile.close();
+
     std::cout << "Database created!" << std::endl;
 }
 
+void opendb(std::string dbname) {
+    std::fstream dbfile(dbname, std::ios::in);
+
+    if (!dbfile) {
+        std::cout << "DB not created!" << std::endl;
+        return;
+    }
+
+    if (currentdb) delete currentdb;
+    currentdb = new db;
+    currentdb->name = dbname;
+}
+
+std::string get_prompt() {
+    if (currentdb)
+        return currentdb->name + PROMPT_SEP;
+    return DEFAULT_PROMPT_TEXT + PROMPT_SEP;
+}
 void database(std::string db)
 {
     // Basically what's happening here:
