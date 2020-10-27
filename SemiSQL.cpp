@@ -31,7 +31,7 @@ int linecr(char*, char*);
 
 struct db {
     std::string name;
-    // add tables handler
+    // TODO: Add tables handler
 };
 
 struct db* currentdb;
@@ -250,6 +250,7 @@ void shreadtable(char db[],char table[])
 }
 void linecr(char line[])
 {
+    // Gets rid of first and last characters of line[].
 	char trans[10];
 	int n,i=0;
 	strcpy(trans,line);
@@ -264,7 +265,10 @@ void linecr(char line[])
 }
 int linecr(char line[],char line2[])
 {
-
+    // if (line.substr(1, line2.length()) == line2)
+    //     return 1
+    // else
+    //     return 0
 		int j=0,i=0;
 				while(line2[i] != '\0')
 				{	j++;
