@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
 
 const std::string DEFAULT_PROMPT_TEXT = "semi_sql";
 const std::string PROMPT_SEP = "> ";
@@ -8,7 +9,7 @@ const std::string PROMPT_SEP = "> ";
 /*
 create database               done & refactored
 open   database               done & refactored
-create table                  done
+create table                  done & refactored
 show   tables                 done
 select *table                 done
 select <specific_column>table done
@@ -22,9 +23,9 @@ funcs: add()
 int parse(std::string);
 void createdb(std::string);
 void opendb(std::string);
+void create_table(void);
 std::string get_prompt();
 void database(char*);
-void createtable(char*);
 void shreadtable(char*, char*);
 int linecr(char*, char*);
 
@@ -75,7 +76,8 @@ int parse(std::string a) {
         opendb(dbname);
 
     } else if (a == "CREATETABLE") {
-        // call to create_table(table_name);
+        create_table();
+
     } else if (a == "OPENTABLE") {
         // TODO: Figure out the purpose of this command
     } else if (a == "DPTABLE") {
@@ -124,9 +126,52 @@ void opendb(std::string dbname) {
     currentdb->name = dbname;
 }
 
+void create_table(void) {
+    std::string table_name, cscols, csdata;
+    size_t field_count;
+
+    if(!currentdb) {
+        std::cout << "NO dB OPENED!!" << std::endl;
+        return;
+    }
+
+    std::cout << "Enter table name: ";
+    getline(std::cin, table_name);
+
+    std::ofstream fout(currentdb->name, std::ios::app);
+
+    fout << "@" << table_name << "@" << std::endl;  // TODO: Figure out what's with the @'s
+
+    std::cout << "Enter column names:" << std::endl;
+    getline(std::cin, cscols);
+    field_count = std::count(cscols.begin(), cscols.end(), ',') + 1;
+
+    fout << cscols << std::endl;
+
+    std::cout << std::endl << "Enter column data:" << std::endl;
+    do {
+        bool excess_data;
+
+        do {
+            getline(std::cin, csdata);
+
+            excess_data = (std::count(csdata.begin(), csdata.end(), ',') >= field_count);
+            if (excess_data)
+                std::cout << "You're entering excess data!" << std::endl
+                    << "Recheck your data" << std::endl;
+        } while (excess_data);
+
+        fout << csdata << std::endl;
+
+    } while (csdata.find('}') == std::string::npos);
+
+    fout.close();
+}
+
 std::string get_prompt() {
     if (currentdb)
         return currentdb->name + PROMPT_SEP;
+
     return DEFAULT_PROMPT_TEXT + PROMPT_SEP;
 }
 void database(std::string db)
@@ -202,54 +247,6 @@ void shreadtable(char db[],char table[])
 	file.close();
 	gets(line);
 	syntax(line);
-}
-void createtable(char db[])
-{
-	char a[10];
-	int i=0,n=0,k=0;
-	std::cout << "\nEnter table name\n";
-	gets(a);
-	ofstream fout;
-	fout.open(db,ios::app|ios::nocreate);
-	if(!fout)
-		{std::cout<<"\nNO dB OPENED!!\n";};   //syntax
-	fout << "@"<< a << "@\n";
-	std::cout<<"\nEnter column names\n";  		//excess data warning;
-	gets(a);
-	while(a[i] != '\0')
-	{
-		if(a[i] == ',') n++;
-		i++;
-	}
-	std::cout << std::endl;
-	fout << a<< "\n";
-	std::cout <<"\nEnter column data\n";
-	i=0;
-	do
-	{
-		maaza:
-		k= 0;
-		gets(a);
-		while(a[i] != '\0')
-		{
-		if(a[i] == ',') k++;
-		if(k > n){ std::cout <<"\nYou're entering excess data!"
-					<< "\n Recheck your data\n"; goto maaza;}
-		i++;
-		}i=0;
-		fout << a;
-		while(a[i] != '\0')
-		{
-			if(a[i] == '}'){fout << '\n' ;goto cas;}
-			i++;
-		}
-		if(a[i] == '\0') fout << '\n';
-		i=0;
-	}while(1);
-	cas:
-	fout.close();
-	gets(a);
-	syntax(a);
 }
 void linecr(char line[])
 {
