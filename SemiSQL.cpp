@@ -5,6 +5,7 @@
 
 const std::string DEFAULT_PROMPT_TEXT = "semi_sql";
 const std::string PROMPT_SEP = "> ";
+const std::string DB_EXT = ".db";
 
 /*
 create database               done & refactored
@@ -101,7 +102,7 @@ int parse(std::string a) {
 }
 
 void createdb(std::string dbname) {
-    std::fstream dbfile(dbname, std::ios::in);
+    std::fstream dbfile(dbname + DB_EXT, std::ios::in);
 
     if (dbfile) {
         std::cout << "Database exists!" << std::endl;
@@ -109,14 +110,14 @@ void createdb(std::string dbname) {
         return;
     }
 
-    dbfile.open(dbname, std::ios::out);
+    dbfile.open(dbname + DB_EXT, std::ios::out);
     dbfile.close();
 
     std::cout << "Database created!" << std::endl;
 }
 
 void opendb(std::string dbname) {
-    std::fstream dbfile(dbname, std::ios::in);
+    std::fstream dbfile(dbname + DB_EXT, std::ios::in);
 
     if (!dbfile) {
         std::cout << "DB not created!" << std::endl;
@@ -140,7 +141,7 @@ void create_table(void) {
     std::cout << "Enter table name: ";
     getline(std::cin, table_name);
 
-    std::ofstream fout(currentdb->name, std::ios::app);
+    std::ofstream fout(currentdb->name + DB_EXT, std::ios::app);
 
     fout << "@" << table_name << "@" << std::endl;
 
@@ -176,7 +177,7 @@ void show_tables(void) {
         return;
     }
 
-    std::ifstream dbfile(currentdb->name);
+    std::ifstream dbfile(currentdb->name + DB_EXT);
     char line[100];
 
     do {
