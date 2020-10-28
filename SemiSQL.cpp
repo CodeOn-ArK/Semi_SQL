@@ -10,7 +10,7 @@ const std::string PROMPT_SEP = "> ";
 create database               done & refactored
 open   database               done & refactored
 create table                  done & refactored
-show   tables                 done
+show   tables                 done & refactored
 select *table                 done
 select <specific_column>table done
 drop   table
@@ -24,6 +24,7 @@ int parse(std::string);
 void createdb(std::string);
 void opendb(std::string);
 void create_table(void);
+void show_tables(void);
 std::string get_prompt();
 void database(char*);
 void shreadtable(char*, char*);
@@ -83,7 +84,8 @@ int parse(std::string a) {
     } else if (a == "DPTABLE") {
         // TODO: Figure out what to do here
     } else if (a == "SHOWTABLES") {
-        // call to showtables();
+        show_tables();
+
     } else if (a == "SELECTTABLE") {
         // input table_name;
         // call to select_table(table_name);
@@ -140,7 +142,7 @@ void create_table(void) {
 
     std::ofstream fout(currentdb->name, std::ios::app);
 
-    fout << "@" << table_name << "@" << std::endl;  // TODO: Figure out what's with the @'s
+    fout << "@" << table_name << "@" << std::endl;
 
     std::cout << "Enter column names:" << std::endl;
     getline(std::cin, cscols);
@@ -166,6 +168,31 @@ void create_table(void) {
     } while (csdata.find('}') == std::string::npos);
 
     fout.close();
+}
+
+void show_tables(void) {
+    if(!currentdb) {
+        std::cout << "NO dB OPENED!!" << std::endl;
+        return;
+    }
+
+    std::ifstream dbfile(currentdb->name);
+    char line[100];
+
+    do {
+        dbfile.get(line, 100);
+        dbfile.get();  // eat trailing newline char
+
+        if (line[0] == '@') {  // @'s are table name identification markers
+            std::string table_name(line);
+            std::cout << table_name.substr(1, table_name.length()-2) << ",";
+        }
+
+    } while (!dbfile.eof());
+
+    std::cout << std::endl;
+
+    dbfile.close();
 }
 
 std::string get_prompt() {
