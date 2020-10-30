@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <vector>
 
 const std::string DEFAULT_PROMPT_TEXT = "semi_sql";
 const std::string PROMPT_SEP = "> ";
@@ -26,7 +27,8 @@ void createdb(std::string);
 void opendb(std::string);
 void create_table(void);
 void show_tables(void);
-std::string get_prompt();
+std::vector<std::string> get_tables(void);
+std::string get_prompt(void);
 void database(char*);
 void shreadtable(char*, char*);
 int linecr(char*, char*);
@@ -177,7 +179,19 @@ void show_tables(void) {
         return;
     }
 
+    std::vector<std::string> tables = get_tables();
+
+    for (int i = 0; i < tables.size(); i++) {
+        std::cout << tables[i];
+        if (i == tables.size() - 1) continue;  // don't print the last comma
+        std::cout << ",";
+    }
+    std::cout << std::endl;
+}
+
+std::vector<std::string> get_tables(void) {
     std::ifstream dbfile(currentdb->name + DB_EXT);
+    std::vector<std::string> tables;
     char line[100];
 
     do {
@@ -186,17 +200,15 @@ void show_tables(void) {
 
         if (line[0] == '@') {  // @'s are table name identification markers
             std::string table_name(line);
-            std::cout << table_name.substr(1, table_name.length()-2) << ",";
+            tables.push_back(table_name.substr(1, table_name.length()-2));
         }
-
     } while (!dbfile.eof());
 
-    std::cout << std::endl;
-
     dbfile.close();
+    return tables;
 }
 
-std::string get_prompt() {
+std::string get_prompt(void) {
     if (currentdb)
         return currentdb->name + PROMPT_SEP;
 
