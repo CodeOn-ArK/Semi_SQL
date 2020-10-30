@@ -5,6 +5,7 @@
 #include <vector>
 
 const std::string DEFAULT_PROMPT_TEXT = "semi_sql";
+const std::string DB_TABLE_SEP = "::";
 const std::string PROMPT_SEP = "> ";
 const std::string DB_EXT = ".db";
 
@@ -13,7 +14,7 @@ create database               done & refactored
 open   database               done & refactored
 create table                  done & refactored
 show   tables                 done & refactored
-select *table                 done
+select *table                 done & refactored
 select <specific_column>table done
 drop   table
 drop   column
@@ -29,6 +30,7 @@ void createdb(std::string);
 void opendb(std::string);
 void create_table(void);
 void show_tables(void);
+void select_table(void);
 tables_vector get_tables(void);
 std::string get_prompt(void);
 void database(char*);
@@ -37,7 +39,7 @@ int linecr(char*, char*);
 
 struct db {
     std::string name;
-    // TODO: Add tables handler
+    std::string* table;
 };
 
 struct db* currentdb;
@@ -68,6 +70,12 @@ int main(void) {
         }
     } while (parse(a));
 
+    if (currentdb) {
+        if (currentdb->table)
+            delete currentdb->table;
+        delete currentdb;
+    }
+
     std::cout << "OK, Bye!" << std::endl;
     return 0;
 }
@@ -75,13 +83,13 @@ int main(void) {
 int parse(std::string a) {
     if (a == "CREATEDB") {
         std::string dbname;
-        std::cout << "Enter database name- ";
+        std::cout << "Enter database name: ";
         getline(std::cin, dbname);
         createdb(dbname);
 
     } else if (a == "OPENDB") {
         std::string dbname;
-        std::cout << "Enter database name- ";
+        std::cout << "Enter database name: ";
         getline(std::cin, dbname);
         opendb(dbname);
 
@@ -96,8 +104,8 @@ int parse(std::string a) {
         show_tables();
 
     } else if (a == "SELECTTABLE") {
-        // input table_name;
-        // call to select_table(table_name);
+        select_table();
+
     } else if (a == "SELECTCOLUMN") {
         // input column_name;
         // disp_column(column_name);
@@ -135,6 +143,7 @@ void opendb(std::string dbname) {
     if (currentdb) delete currentdb;
     currentdb = new db;
     currentdb->name = dbname;
+    currentdb->table = nullptr;
 }
 
 void create_table(void) {
@@ -195,6 +204,28 @@ void show_tables(void) {
     std::cout << std::endl;
 }
 
+void select_table(void) {
+    if(!currentdb) {
+        std::cout << "NO dB OPENED!!" << std::endl;
+        return;
+    }
+
+    std::string table_name;
+
+    std::cout << "Enter table name: ";
+    getline(std::cin, table_name);
+
+    tables_vector tables = get_tables();
+
+    if (std::find(tables.begin(), tables.end(), table_name) == tables.end()) {
+        std::cout << "Table does not exist in database." << std::endl;
+        return;
+    }
+
+    if (currentdb->table) delete currentdb->table;
+    currentdb->table = new std::string(table_name);
+}
+
 tables_vector get_tables(void) {
     std::ifstream dbfile(currentdb->name + DB_EXT);
     tables_vector tables;
@@ -215,10 +246,16 @@ tables_vector get_tables(void) {
 }
 
 std::string get_prompt(void) {
-    if (currentdb)
-        return currentdb->name + PROMPT_SEP;
+    std::string prompt;
 
-    return DEFAULT_PROMPT_TEXT + PROMPT_SEP;
+    if (currentdb) {
+        prompt = currentdb->name;
+        if (currentdb->table)
+            prompt += DB_TABLE_SEP + *(currentdb->table);
+    } else
+        prompt = DEFAULT_PROMPT_TEXT;
+
+    return prompt + PROMPT_SEP;
 }
 void database(std::string db)
 {
