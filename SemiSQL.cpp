@@ -62,9 +62,13 @@ int main(void) {
 
     do {
         std::cout << std::endl << get_prompt();
-        getline(std::cin, a);
+        if (!getline(std::cin, a)) {
+            std::cout << "EXIT" << std::endl;
+            break;
+        }
     } while (parse(a));
 
+    std::cout << "OK, Bye!" << std::endl;
     return 0;
 }
 
