@@ -22,12 +22,14 @@ funcs: add()
    (?) percentage()
 */
 
+typedef std::vector<std::string> tables_vector;
+
 int parse(std::string);
 void createdb(std::string);
 void opendb(std::string);
 void create_table(void);
 void show_tables(void);
-std::vector<std::string> get_tables(void);
+tables_vector get_tables(void);
 std::string get_prompt(void);
 void database(char*);
 void shreadtable(char*, char*);
@@ -179,7 +181,7 @@ void show_tables(void) {
         return;
     }
 
-    std::vector<std::string> tables = get_tables();
+    tables_vector tables = get_tables();
 
     for (int i = 0; i < tables.size(); i++) {
         std::cout << tables[i];
@@ -189,9 +191,9 @@ void show_tables(void) {
     std::cout << std::endl;
 }
 
-std::vector<std::string> get_tables(void) {
+tables_vector get_tables(void) {
     std::ifstream dbfile(currentdb->name + DB_EXT);
-    std::vector<std::string> tables;
+    tables_vector tables;
     char line[100];
 
     do {
