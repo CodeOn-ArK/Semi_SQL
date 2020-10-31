@@ -148,7 +148,7 @@ void opendb(std::string dbname) {
 
 void create_table(void) {
     std::string table_name, cscols, csdata;
-    size_t field_count;
+    int field_count;
 
     if(!currentdb) {
         std::cout << "NO dB OPENED!!" << std::endl;
@@ -196,7 +196,7 @@ void show_tables(void) {
 
     tables_vector tables = get_tables();
 
-    for (int i = 0; i < tables.size(); i++) {
+    for (size_t i = 0; i < tables.size(); i++) {
         std::cout << tables[i];
         if (i == tables.size() - 1) continue;  // don't print the last comma
         std::cout << ",";
