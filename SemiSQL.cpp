@@ -15,6 +15,7 @@ open   database               done & refactored
 create table                  done & refactored
 show   tables                 done & refactored
 select *table                 done & refactored
+display table                 done & refactored
 select <specific_column>table done
 drop   table
 drop   column
@@ -23,16 +24,16 @@ funcs: add()
    (?) percentage()
 */
 
-typedef std::vector<std::string> tables_vector;
-
-int parse(std::string);
-void createdb(std::string);
-void opendb(std::string);
+int parse(std::string const&);
+void createdb(std::string const&);
+void opendb(std::string const&);
 void create_table(void);
 void show_tables(void);
 void select_table(void);
-tables_vector get_tables(void);
+void display_table(void);
+void get_tables(std::vector<std::string>&);
 std::string get_prompt(void);
+void tokenize(std::string const&, const char, std::vector<std::string>&);
 void database(char*);
 void shreadtable(char*, char*);
 int linecr(char*, char*);
@@ -80,7 +81,7 @@ int main(void) {
     return 0;
 }
 
-int parse(std::string a) {
+int parse(std::string const &a) {
     if (a == "CREATEDB") {
         std::string dbname;
         std::cout << "Enter database name: ";
@@ -99,7 +100,8 @@ int parse(std::string a) {
     } else if (a == "OPENTABLE") {
         // TODO: Figure out the purpose of this command
     } else if (a == "DPTABLE") {
-        // TODO: Figure out what to do here
+        display_table();
+
     } else if (a == "SHOWTABLES") {
         show_tables();
 
@@ -117,7 +119,7 @@ int parse(std::string a) {
     return 1;
 }
 
-void createdb(std::string dbname) {
+void createdb(std::string const &dbname) {
     std::fstream dbfile(dbname + DB_EXT, std::ios::in);
 
     if (dbfile) {
@@ -132,7 +134,7 @@ void createdb(std::string dbname) {
     std::cout << "Database created!" << std::endl;
 }
 
-void opendb(std::string dbname) {
+void opendb(std::string const &dbname) {
     std::fstream dbfile(dbname + DB_EXT, std::ios::in);
 
     if (!dbfile) {
@@ -194,7 +196,8 @@ void show_tables(void) {
         return;
     }
 
-    tables_vector tables = get_tables();
+    std::vector<std::string> tables;
+    get_tables(tables);
 
     for (size_t i = 0; i < tables.size(); i++) {
         std::cout << tables[i];
@@ -215,7 +218,8 @@ void select_table(void) {
     std::cout << "Enter table name: ";
     getline(std::cin, table_name);
 
-    tables_vector tables = get_tables();
+    std::vector<std::string> tables;
+    get_tables(tables);
 
     if (std::find(tables.begin(), tables.end(), table_name) == tables.end()) {
         std::cout << "Table does not exist in database." << std::endl;
@@ -226,9 +230,62 @@ void select_table(void) {
     currentdb->table = new std::string(table_name);
 }
 
-tables_vector get_tables(void) {
+void display_table(void) {
+    if(!currentdb) {
+        std::cout << "NO dB OPENED!!" << std::endl;
+        return;
+    }
+
+    if (!currentdb->table) {
+        std::cout << "NO Table OPENED!!" << std::endl;
+        return;
+    }
+
     std::ifstream dbfile(currentdb->name + DB_EXT);
-    tables_vector tables;
+    std::string str_line;
+    char line[100];
+
+    do {
+        dbfile.getline(line, 100);
+
+        if (line[0] == '@')
+            str_line = line;
+            if (str_line.substr(1, str_line.size()-2) == *(currentdb->table))
+                break;
+    } while(!dbfile.eof());
+
+    // Get the fields
+    std::vector<std::string> fields;
+    dbfile.getline(line, 100);
+    str_line = line;
+    tokenize(str_line, ',', fields);
+
+    for (int i = 0; i < fields.size(); i++) {
+        std::cout << fields[i];
+        if (i != fields.size() - 1)
+            std::cout << "\t\t";
+    }
+    std::cout << std::endl;
+
+    // Get values
+    std::vector<std::string> values;
+    do {
+        dbfile.getline(line, 100);
+        str_line = line;
+        tokenize(str_line, ',', values);
+        for (int i = 0; i < values.size(); i++) {
+            std::cout << values[i];
+            if (i != values.size() - 1)
+                std::cout << "\t\t";
+        }
+        std::cout << std::endl;
+    } while (str_line.find('}') == std::string::npos);
+
+    dbfile.close();
+}
+
+void get_tables(std::vector<std::string> &tables) {
+    std::ifstream dbfile(currentdb->name + DB_EXT);
     char line[100];
 
     do {
@@ -242,7 +299,6 @@ tables_vector get_tables(void) {
     } while (!dbfile.eof());
 
     dbfile.close();
-    return tables;
 }
 
 std::string get_prompt(void) {
@@ -256,6 +312,18 @@ std::string get_prompt(void) {
         prompt = DEFAULT_PROMPT_TEXT;
 
     return prompt + PROMPT_SEP;
+}
+
+void tokenize(std::string const &str, const char delim,
+              std::vector<std::string> &out) {
+    size_t start;
+    size_t end=0;
+
+    out.clear();
+    while ((start = str.find_first_not_of(delim, end)) != std::string::npos) {
+        end = str.find(delim, start);
+        out.push_back(str.substr(start, end - start));
+    }
 }
 void database(std::string db)
 {
