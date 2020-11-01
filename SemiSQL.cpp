@@ -32,6 +32,7 @@ void create_table(void);
 void show_tables(void);
 void select_table(void);
 void display_table(void);
+void print_row(std::vector<std::string> const&);
 void get_tables(std::vector<std::string>&);
 std::string get_prompt(void);
 void tokenize(std::string const&, std::string const&, std::vector<std::string>&);
@@ -42,9 +43,7 @@ int linecr(char*, char*);
 struct db {
     std::string name;
     std::string* table;
-};
-
-struct db* currentdb;
+} *currentdb;
 
 int main(void) {
     std::string a;
@@ -243,61 +242,52 @@ void display_table(void) {
     }
 
     std::ifstream dbfile(currentdb->name + DB_EXT);
-    std::string str_line;
-    char line[100];
+    std::string line;
 
     do {
-        dbfile.getline(line, 100);
+        getline(dbfile, line);
 
         if (line[0] == '@') {
-            str_line = line;
-            if (str_line.substr(1, str_line.size()-2) == *(currentdb->table))
+            if (line.substr(1, line.size()-2) == *(currentdb->table))
                 break;
         }
     } while(!dbfile.eof());
 
-    // Get the fields
-    std::vector<std::string> fields;
-    dbfile.getline(line, 100);
-    str_line = line;
-    tokenize(str_line, DELIMS, fields);
+    std::vector<std::string> fields, values;
 
-    for (size_t i = 0; i < fields.size(); i++) {
-        std::cout << fields[i];
-        if (i != fields.size() - 1)
-            std::cout << "\t\t";
-    }
-    std::cout << std::endl;
+    // Get the fields and print 'em
+    getline(dbfile, line);
+    tokenize(line, DELIMS, fields);
+    print_row(fields);
 
-    // Get values
-    std::vector<std::string> values;
+    // Get values and print 'em
     do {
-        dbfile.getline(line, 100);
-        str_line = line;
-        tokenize(str_line, DELIMS, values);
-        for (size_t i = 0; i < values.size(); i++) {
-            std::cout << values[i];
-            if (i != values.size() - 1)
-                std::cout << "\t\t";
-        }
-        std::cout << std::endl;
-    } while (str_line.find('}') == std::string::npos);
+        getline(dbfile, line);
+        tokenize(line, DELIMS, values);
+        print_row(values);
+    } while (line.find('}') == std::string::npos);
 
     dbfile.close();
 }
 
+void print_row(std::vector<std::string> const &cols) {
+    for (size_t i = 0; i < cols.size(); i++) {
+        std::cout << cols[i];
+        if (i != cols.size() - 1)
+            std::cout << "\t\t";
+    }
+    std::cout << std::endl;
+}
+
 void get_tables(std::vector<std::string> &tables) {
     std::ifstream dbfile(currentdb->name + DB_EXT);
-    char line[100];
+    std::string line;
 
     do {
-        dbfile.get(line, 100);
-        dbfile.get();  // eat trailing newline char
+        getline(dbfile, line);
 
-        if (line[0] == '@') {  // @'s are table name identification markers
-            std::string table_name(line);
-            tables.push_back(table_name.substr(1, table_name.length()-2));
-        }
+        if (line[0] == '@')  // @'s are table name identification markers
+            tables.push_back(line.substr(1, line.length()-2));
     } while (!dbfile.eof());
 
     dbfile.close();
