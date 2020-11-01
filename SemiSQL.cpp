@@ -17,7 +17,7 @@ create table                  done & refactored
 show   tables                 done & refactored
 select *table                 done & refactored
 display table                 done & refactored
-select <specific_column>table done
+select <specific_field>table  done & reafctored
 drop   table
 drop   column
 funcs: add()
@@ -32,6 +32,7 @@ void create_table(void);
 void show_tables(void);
 void select_table(void);
 void display_table(void);
+void select_field(void);
 void print_row(std::vector<std::string> const&);
 void get_tables(std::vector<std::string>&);
 std::string get_prompt(void);
@@ -59,7 +60,7 @@ int main(void) {
         << "* Type DPTABLE to display the table." << std::endl
         << "* Type SHOWTABLES to display the names of all the tables" << std::endl
         << "* Type SELECTTABLE to select a specific table." << std::endl
-        << "* Type SELECTCOLUMN to select a column name." << std::endl
+        << "* Type SELECTFIELD to select a field name." << std::endl
         << "* Type EXIT to exit." << std::endl
         << "********************************************************" << std::endl;
 
@@ -108,9 +109,9 @@ int parse(std::string const &a) {
     } else if (a == "SELECTTABLE") {
         select_table();
 
-    } else if (a == "SELECTCOLUMN") {
-        // input column_name;
-        // disp_column(column_name);
+    } else if (a == "SELECTFIELD") {
+        select_field();
+
     } else if (a == "EXIT")
         return 0;
     else
@@ -237,13 +238,14 @@ void display_table(void) {
     }
 
     if (!currentdb->table) {
-        std::cout << "NO Table OPENED!!" << std::endl;
+        std::cout << "NO Table SELECTED!!" << std::endl;
         return;
     }
 
     std::ifstream dbfile(currentdb->name + DB_EXT);
     std::string line;
 
+    // Navigate to the current table
     do {
         getline(dbfile, line);
 
@@ -265,6 +267,59 @@ void display_table(void) {
         getline(dbfile, line);
         tokenize(line, DELIMS, values);
         print_row(values);
+    } while (line.find('}') == std::string::npos);
+
+    dbfile.close();
+}
+
+void select_field(void) {
+    if(!currentdb) {
+        std::cout << "NO dB OPENED!!" << std::endl;
+        return;
+    }
+
+    if (!currentdb->table) {
+        std::cout << "NO Table SELECTED!!" << std::endl;
+        return;
+    }
+
+    std::ifstream dbfile(currentdb->name + DB_EXT);
+    std::string line, field_name;
+
+    std::cout << "Enter field name: ";
+    getline(std::cin, field_name);
+
+    // Navigate to the current table
+    do {
+        getline(dbfile, line);
+
+        if (line[0] == '@') {
+            if (line.substr(1, line.size()-2) == *(currentdb->table))
+                break;
+        }
+    } while(!dbfile.eof());
+
+    std::vector<std::string> fields, values;
+
+    // Get the fields
+    getline(dbfile, line);
+    tokenize(line, DELIMS, fields);
+
+    // Get the index of `field_name` in `fields`
+    auto it = std::find(fields.begin(), fields.end(), field_name);
+    if (it == fields.end()) {
+        std::cout << "Field does not exist!" << std::endl;
+        return;
+    }
+    size_t index = it - fields.begin();
+
+    std::cout << fields[index] << std::endl;
+
+    // Print values corresponding to `field_name`
+    do {
+        getline(dbfile, line);
+        tokenize(line, DELIMS, values);
+        std::cout << values[index] << std::endl;
     } while (line.find('}') == std::string::npos);
 
     dbfile.close();
