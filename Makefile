@@ -5,3 +5,6 @@ all: SemiSQL.o
 
 SemiSQL.o: SemiSQL.cpp
 	$(CXX) $(CXXFLAGS) -c SemiSQL.cpp
+
+clean:
+	$(RM) SemiSQL *.o
