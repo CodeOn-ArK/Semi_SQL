@@ -8,6 +8,7 @@ const std::string DEFAULT_PROMPT_TEXT = "semi_sql";
 const std::string DB_TABLE_SEP = "::";
 const std::string PROMPT_SEP = "> ";
 const std::string DB_EXT = ".db";
+const std::string DELIMS = ",;}";
 
 /*
 create database               done & refactored
@@ -33,7 +34,7 @@ void select_table(void);
 void display_table(void);
 void get_tables(std::vector<std::string>&);
 std::string get_prompt(void);
-void tokenize(std::string const&, const char, std::vector<std::string>&);
+void tokenize(std::string const&, std::string const&, std::vector<std::string>&);
 void database(char*);
 void shreadtable(char*, char*);
 int linecr(char*, char*);
@@ -248,19 +249,20 @@ void display_table(void) {
     do {
         dbfile.getline(line, 100);
 
-        if (line[0] == '@')
+        if (line[0] == '@') {
             str_line = line;
             if (str_line.substr(1, str_line.size()-2) == *(currentdb->table))
                 break;
+        }
     } while(!dbfile.eof());
 
     // Get the fields
     std::vector<std::string> fields;
     dbfile.getline(line, 100);
     str_line = line;
-    tokenize(str_line, ',', fields);
+    tokenize(str_line, DELIMS, fields);
 
-    for (int i = 0; i < fields.size(); i++) {
+    for (size_t i = 0; i < fields.size(); i++) {
         std::cout << fields[i];
         if (i != fields.size() - 1)
             std::cout << "\t\t";
@@ -272,8 +274,8 @@ void display_table(void) {
     do {
         dbfile.getline(line, 100);
         str_line = line;
-        tokenize(str_line, ',', values);
-        for (int i = 0; i < values.size(); i++) {
+        tokenize(str_line, DELIMS, values);
+        for (size_t i = 0; i < values.size(); i++) {
             std::cout << values[i];
             if (i != values.size() - 1)
                 std::cout << "\t\t";
@@ -314,16 +316,20 @@ std::string get_prompt(void) {
     return prompt + PROMPT_SEP;
 }
 
-void tokenize(std::string const &str, const char delim,
+void tokenize(std::string const &str, std::string const &delims,
               std::vector<std::string> &out) {
-    size_t start;
-    size_t end=0;
+    size_t start=0;
+    size_t end;
 
     out.clear();
-    while ((start = str.find_first_not_of(delim, end)) != std::string::npos) {
-        end = str.find(delim, start);
+    while ((end = str.find_first_of(delims, start)) != std::string::npos) {
         out.push_back(str.substr(start, end - start));
+        start = end + 1;
     }
+
+    // push_back the last element iff it's not empty
+    if (start != str.size())
+        out.push_back(str.substr(start, str.size() - start));
 }
 void database(std::string db)
 {
