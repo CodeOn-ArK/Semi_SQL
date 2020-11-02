@@ -10,21 +10,6 @@ const std::string PROMPT_SEP = "> ";
 const std::string DB_EXT = ".db";
 const std::string DELIMS = ",;}";
 
-/*
-create database               done & refactored
-open   database               done & refactored
-create table                  done & refactored
-show   tables                 done & refactored
-select *table                 done & refactored
-display table                 done & refactored
-select <specific_field>table  done & reafctored
-drop   table
-drop   column
-funcs: add()
-       average()
-   (?) percentage()
-*/
-
 int parse(std::string const&);
 void createdb(std::string const&);
 void opendb(std::string const&);
