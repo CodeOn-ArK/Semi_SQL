@@ -33,6 +33,7 @@ void show_tables(void);
 void select_table(void);
 void display_table(void);
 void select_field(void);
+void navigate_to_table(std::ifstream&, std::string const&);
 void print_row(std::vector<std::string> const&);
 void get_tables(std::vector<std::string>&);
 bool db_not_opened(void);
@@ -228,15 +229,7 @@ void display_table(void) {
     std::ifstream dbfile(currentdb->name + DB_EXT);
     std::string line;
 
-    // Navigate to the current table
-    do {
-        getline(dbfile, line);
-
-        if (line[0] == '@') {
-            if (line.substr(1, line.size()-2) == *(currentdb->table))
-                break;
-        }
-    } while(!dbfile.eof());
+    navigate_to_table(dbfile, *(currentdb->table));
 
     std::vector<std::string> fields, values;
 
@@ -264,15 +257,7 @@ void select_field(void) {
     std::cout << "Enter field name: ";
     getline(std::cin, field_name);
 
-    // Navigate to the current table
-    do {
-        getline(dbfile, line);
-
-        if (line[0] == '@') {
-            if (line.substr(1, line.size()-2) == *(currentdb->table))
-                break;
-        }
-    } while(!dbfile.eof());
+    navigate_to_table(dbfile, *(currentdb->table));
 
     std::vector<std::string> fields, values;
 
@@ -298,6 +283,19 @@ void select_field(void) {
     } while (line.find('}') == std::string::npos);
 
     dbfile.close();
+}
+
+void navigate_to_table(std::ifstream &file, std::string const &table_name) {
+    std::string line;
+
+    do {
+        getline(file, line);
+
+        if (line[0] == '@') {
+            if (line.substr(1, line.size()-2) == table_name)
+                break;
+        }
+    } while(!file.eof());
 }
 
 void print_row(std::vector<std::string> const &cols) {
