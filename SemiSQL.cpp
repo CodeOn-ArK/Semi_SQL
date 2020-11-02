@@ -35,11 +35,10 @@ void display_table(void);
 void select_field(void);
 void print_row(std::vector<std::string> const&);
 void get_tables(std::vector<std::string>&);
+bool db_not_opened(void);
+bool table_not_selected(void);
 std::string get_prompt(void);
 void tokenize(std::string const&, std::string const&, std::vector<std::string>&);
-void database(char*);
-void shreadtable(char*, char*);
-int linecr(char*, char*);
 
 struct db {
     std::string name;
@@ -150,13 +149,10 @@ void opendb(std::string const &dbname) {
 }
 
 void create_table(void) {
+    if (db_not_opened()) return;
+
     std::string table_name, cscols, csdata;
     int field_count;
-
-    if(!currentdb) {
-        std::cout << "NO dB OPENED!!" << std::endl;
-        return;
-    }
 
     std::cout << "Enter table name: ";
     getline(std::cin, table_name);
@@ -192,10 +188,7 @@ void create_table(void) {
 }
 
 void show_tables(void) {
-    if(!currentdb) {
-        std::cout << "NO dB OPENED!!" << std::endl;
-        return;
-    }
+    if (db_not_opened()) return;
 
     std::vector<std::string> tables;
     get_tables(tables);
@@ -209,10 +202,7 @@ void show_tables(void) {
 }
 
 void select_table(void) {
-    if(!currentdb) {
-        std::cout << "NO dB OPENED!!" << std::endl;
-        return;
-    }
+    if (db_not_opened()) return;
 
     std::string table_name;
 
@@ -232,15 +222,7 @@ void select_table(void) {
 }
 
 void display_table(void) {
-    if(!currentdb) {
-        std::cout << "NO dB OPENED!!" << std::endl;
-        return;
-    }
-
-    if (!currentdb->table) {
-        std::cout << "NO Table SELECTED!!" << std::endl;
-        return;
-    }
+    if (table_not_selected()) return;
 
     std::ifstream dbfile(currentdb->name + DB_EXT);
     std::string line;
@@ -273,15 +255,7 @@ void display_table(void) {
 }
 
 void select_field(void) {
-    if(!currentdb) {
-        std::cout << "NO dB OPENED!!" << std::endl;
-        return;
-    }
-
-    if (!currentdb->table) {
-        std::cout << "NO Table SELECTED!!" << std::endl;
-        return;
-    }
+    if (table_not_selected()) return;
 
     std::ifstream dbfile(currentdb->name + DB_EXT);
     std::string line, field_name;
@@ -346,6 +320,21 @@ void get_tables(std::vector<std::string> &tables) {
     } while (!dbfile.eof());
 
     dbfile.close();
+}
+
+bool db_not_opened(void) {
+    if (currentdb) return false;
+    std::cout << "NO dB OPENED!!" << std::endl;
+    return true;
+}
+
+bool table_not_selected(void) {
+    if (!db_not_opened()) {
+        if (currentdb->table)
+            return false;
+        std::cout << "NO Table SELECTED!!" << std::endl;
+    }
+    return true;
 }
 
 std::string get_prompt(void) {
