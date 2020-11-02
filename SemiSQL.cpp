@@ -37,7 +37,7 @@ void print_row(std::vector<std::string> const&);
 void get_tables(std::vector<std::string>&);
 bool db_not_opened(void);
 bool table_not_selected(void);
-std::string get_prompt(void);
+void print_prompt(void);
 void tokenize(std::string const&, std::string const&, std::vector<std::string>&);
 
 struct db {
@@ -64,7 +64,8 @@ int main(void) {
         << "********************************************************" << std::endl;
 
     do {
-        std::cout << std::endl << get_prompt();
+        std::cout << std::endl;
+        print_prompt();
         if (!getline(std::cin, a)) {
             std::cout << "EXIT" << std::endl;
             break;
@@ -337,17 +338,15 @@ bool table_not_selected(void) {
     return true;
 }
 
-std::string get_prompt(void) {
-    std::string prompt;
-
+void print_prompt(void) {
     if (currentdb) {
-        prompt = currentdb->name;
+        std::cout << currentdb->name;
         if (currentdb->table)
-            prompt += DB_TABLE_SEP + *(currentdb->table);
+            std::cout << DB_TABLE_SEP << *(currentdb->table);
     } else
-        prompt = DEFAULT_PROMPT_TEXT;
+        std::cout << DEFAULT_PROMPT_TEXT;
 
-    return prompt + PROMPT_SEP;
+    std::cout << PROMPT_SEP;
 }
 
 void tokenize(std::string const &str, std::string const &delims,
